@@ -1675,12 +1675,16 @@ class YoutubeDL(object):
                                  expected=True)
 
         if download:
+            dl_cnt = 0
             if len(formats_to_download) > 1:
                 self.to_screen('[info] %s: downloading video in %s formats' % (info_dict['id'], len(formats_to_download)))
             for format in formats_to_download:
                 new_info = dict(info_dict)
                 new_info.update(format)
-                self.process_info(new_info)
+                if self.process_info(new_info):
+                    dl_cnt += 1
+            if dl_cnt == len(formats_to_download):
+                self.record_download_archive(info_dict)
         # We update the info dict with the best quality format (backwards compatibility)
         info_dict.update(formats_to_download[-1])
         return info_dict
@@ -2042,7 +2046,7 @@ class YoutubeDL(object):
                 except (PostProcessingError) as err:
                     self.report_error('postprocessing: %s' % str(err))
                     return
-                self.record_download_archive(info_dict)
+                return True
 
     def download(self, url_list):
         """Download a given list of URLs."""
